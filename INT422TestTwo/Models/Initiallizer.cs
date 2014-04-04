@@ -32,7 +32,6 @@ namespace INT422TestTwo.Models
             mo.Genres.Add(g);
             mo.Genres.Add(g1);
             dc.Movies.Add(mo);
-            
             mo = null;
             d = null;
 
@@ -121,8 +120,6 @@ namespace INT422TestTwo.Models
             mo.Genres.Add(g3);
             mo.Genres.Add(g1);
             dc.Movies.Add(mo);
-
-            dc.SaveChanges();
         }
     }
 }

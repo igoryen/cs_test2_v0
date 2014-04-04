@@ -1,58 +1,59 @@
-﻿using INT422TestTwo.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
+using System.Web.Mvc;
 
 namespace INT422TestTwo.ViewModels
 {
-    public class RepoGenre : RepositoryBase
+    public class RepoGenre:RepositoryBase
     {
-        /// <summary>
-        /// Creates List of GenreForList to be presented in the Genre List View
-        /// </summary>
-        /// <returns>List of GenreForList</returns>
-        public IEnumerable<GenreForList> GetGenresForList()
-        {
-            var forList = dc.Genres.OrderBy(genre => genre.Name);
+       public GenreFull getGenreFull(int? id)
+       {
 
-            List<GenreForList> genresForList = new List<GenreForList>();
+           var genre = dc.Genres.Include("Movies").FirstOrDefault(i => i.Id == id);
+           if (genre == null) return null;
 
-            foreach (Genre g in forList)
-            {
-                GenreForList gfl = new GenreForList();
-                gfl.Id = g.Id;
-                gfl.Name = g.Name;
-                genresForList.Add(gfl);
-            }
+           GenreFull gf = new GenreFull();
+           gf.Id = genre.Id;
+           gf.Name = genre.Name;
 
-            return genresForList;
-        }
+           var rd = new ViewModels.RepoDirector();
+           var mfls = new List<MovieFull>();
+           foreach (var item in genre.Movies)
+           {
+               var movie = new MovieFull();
+               movie.Id = item.Id;
+               movie.Title = item.Title;
+               var dir = dc.Movies.Include("Director").FirstOrDefault(m => m.Id == item.Id).Director;
+               movie.Director = rd.getDirectorFull(dir.Id);
+               mfls.Add(movie);
+           }
 
-        /// <summary>
-        /// Creates a GenreFull object based on provided Id
-        /// </summary>
-        /// <param name="id">Genre Id</param>
-        /// <returns>GenreFull object based on id</returns>
-        public GenreFull GetGenreFull(int? id)
-        {
-            RepoMovie Repo_Movies = new RepoMovie();
-            Genre genre = dc.Genres.Include("Movies").FirstOrDefault(g => g.Id == id);
-            GenreFull gf = new GenreFull();
-            gf.Id = genre.Id;
-            gf.Name = genre.Name;
+           gf.Movies = mfls;
+           return gf;
+       }
 
-            List<MovieForList> movieFullList = new List<MovieForList>();
-             
-            foreach(Movie m in genre.Movies)
-            {
-                MovieForList mf = Repo_Movies.GetMovieForList(m.Id);
-                movieFullList.Add(mf);
-            }
+       public IEnumerable<GenreBase> getListOfGenreBase()
+       {
+           var genres = dc.Genres.OrderBy(g => g.Name);
+           if (genres == null) return null;
 
-            gf.Movies = movieFullList;
+           List<GenreBase> gfls = new List<GenreBase>();
+           foreach (var item in genres)
+           {
+               GenreBase g = new GenreBase();
+               g.Id = item.Id;
+               g.Name = item.Name;
+               gfls.Add(g);
+           }
 
-            return gf;
-        }
+           return gfls;
+       }
+
+      public SelectList getGenreSelectList()
+      {
+         SelectList sl = new SelectList(getListOfGenreBase(), "Id", "Name");
+         return sl;
+      }
     }
 }

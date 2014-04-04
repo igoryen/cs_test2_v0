@@ -1,0 +1,63 @@
+﻿@model INT422TestTwo.ViewModels.MovieFull
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>MovieFull</h4>
+	<hr />
+    <dl class="dl-horizontal">
+        @if (Model == null)
+        {
+            <dd><i>Sorry no records found</i></dd>
+            <p>
+                @Html.ActionLink("Back to List", "Index")
+            </p>
+        }
+        else
+        {       
+            <dt>
+                  @Html.DisplayNameFor(model => model.Title)
+             </dt>
+            <dd>
+                @Html.DisplayFor(model => model.Title)
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.TicketPrice)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.TicketPrice)
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.Director)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.Director.Name)
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.Genres)
+            </dt>
+                if (Model.Genres.Count > 0 )
+                { 
+                  foreach (var item in Model.Genres)
+                  {
+                    <dd>@item.Name <br /></dd>
+                  }
+                }
+                else
+                {
+                    <dd><i>No genres found</i><br /></dd>
+                }
+            <p>
+                @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
+                @Html.ActionLink("Back to List", "Index")
+            </p>
+        }
+    </dl>
+</div>

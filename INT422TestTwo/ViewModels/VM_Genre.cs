@@ -1,46 +1,29 @@
-﻿using INT422TestTwo.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
+using System.ComponentModel.DataAnnotations;
+
 
 namespace INT422TestTwo.ViewModels
 {
-    /// <summary>
-    /// GenreForList ViewModel to be used in List
-    /// </summary>
-    public class GenreForList
+    public class GenreBase
     {
-        /// <summary>
-        /// Genre's Id = Primary Key
-        /// </summary>
         [Key]
         public int Id { get; set; }
-
-        /// <summary>
-        /// Genre's Name
-        /// </summary>
         [Required]
         public string Name { get; set; }
     }
 
-    /// <summary>
-    /// GenreFull ViewModel to be used in Details and Create 
-    /// </summary>
-    public class GenreFull : GenreForList
+    public class GenreFull: GenreBase
     {
-        /// <summary>
-        /// Constructor will initialize list of Movies
-        /// </summary>
+        virtual public List<MovieFull> Movies { get; set; }
+
         public GenreFull()
         {
-            Movies = new List<MovieForList>();
+            this.Name = string.Empty;
+            this.Movies = new List<MovieFull>();
         }
 
-        /// <summary>
-        /// All Movies with specified Genre
-        /// </summary>
-        public List<MovieForList> Movies { get; set; }
     }
 }

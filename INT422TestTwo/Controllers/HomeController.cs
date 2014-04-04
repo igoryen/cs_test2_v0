@@ -12,5 +12,20 @@ namespace INT422TestTwo.Controllers
         {
             return View();
         }
+
+        public ActionResult Movies()
+        {
+            return RedirectToAction("Index","Movie");
+        }
+
+        public ActionResult Directors()
+        {
+            return RedirectToAction("Index","Director");
+        }
+
+        public ActionResult Genres()
+        {
+            return RedirectToAction("Index","Genre");
+        }
     }
 }

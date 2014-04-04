@@ -1,164 +1,158 @@
-﻿using INT422TestTwo.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.Mvc;
 
 namespace INT422TestTwo.ViewModels
 {
-    public class RepoMovie : RepositoryBase
+    public class RepoMovie: RepositoryBase
     {
-        /// <summary>
-        /// Creates List of MovieForList to be presented in the Movie List View
-        /// </summary>
-        /// <returns>List of MovieForList</returns>
-        public IEnumerable<MovieForList> GetMoviesForList()
+        public MovieFull getMovieFull(int? id)
         {
-            var forList = dc.Movies.OrderBy(movie => movie.Title);
+            if (id == null) return null;
 
-            List<MovieForList> moviesForList = new List<MovieForList>();
+            // can use FirstOrDefault but SingleOrDefault is stricter - throwing exception if it fails
+            var movie = dc.Movies.Include("Genres").Include("Director").SingleOrDefault(n => n.Id == id);
+            if (movie == null) return null;
 
-            foreach (Movie m in forList)
-            {
-                MovieForList mfl = new MovieForList();
-                mfl.Id = m.Id;
-                mfl.Title = m.Title;
-                moviesForList.Add(mfl);
-            }
-
-            return moviesForList;
-        }
-
-        /// <summary>
-        /// Creates a MovieFull object based on provided Id
-        /// </summary>
-        /// <param name="id">Movie Id</param>
-        /// <returns>MovieFull object based on id</returns>
-        public MovieFull GetMovieFull(int? id)
-        {
-            RepoDirector Repo_Director = new RepoDirector();
-            RepoGenre Repo_Genre = new RepoGenre();
-
-            Movie movie = dc.Movies.FirstOrDefault(m => m.Id == id);
             MovieFull mf = new MovieFull();
-
             mf.Id = movie.Id;
+            mf.Title = movie.Title;
             mf.TicketPrice = movie.TicketPrice;
-            mf.Title = movie.Title;
-            mf.Director = Repo_Director.GetDirectorFull(movie.Director.Id);
+            mf.Director = rd.getDirectorFull(movie.Director.Id);
 
-            List<GenreFull> genreFullList = new List<GenreFull>();
-
-            foreach (Genre g in movie.Genres)
+            List<GenreFull> gfls = new List<GenreFull>();
+            foreach (var item in movie.Genres)
             {
-                GenreFull gf = Repo_Genre.GetGenreFull(g.Id);
-                genreFullList.Add(gf);
+                gfls.Add(rg.getGenreFull(item.Id));
             }
-
-            mf.Genres = genreFullList;
+            mf.Genres = gfls;
 
             return mf;
         }
 
-        /// <summary>
-        /// Creates a MovieFull object based on provided Id
-        /// </summary>
-        /// <param name="id">Movie Id</param>
-        /// <returns>MovieFull object based on id</returns>
-        public MovieForList GetMovieForList(int? id)
+        public IEnumerable<ViewModels.MovieBase> getListOfMovieBase()
         {
-            Movie movie = dc.Movies.FirstOrDefault(m => m.Id == id);
-            MovieForList mf = new MovieForList();
+            var all_movies = dc.Movies.OrderBy(m => m.Title);
 
-            mf.Id = movie.Id;
-            mf.Title = movie.Title;
-
-            return mf;
-        }
-
-        /// <summary>
-        /// Create a MovieForDetails object based on provided id
-        /// This method is used to present movie details
-        /// </summary>
-        /// <param name="id">Movie id</param>
-        /// <returns>MovieForDetails object</returns>
-        public MovieForDetails GetMovieForDetails(int? id)
-        {
-            RepoDirector Repo_Director = new RepoDirector();
-            Movie movie = dc.Movies.Include("Director").FirstOrDefault(m => m.Id == id);
-            MovieForDetails mfd = new MovieForDetails();
-
-            mfd.Id = movie.Id;
-            mfd.TicketPrice = movie.TicketPrice;
-            mfd.Title = movie.Title;
-            mfd.Director = Repo_Director.GetDirectorForList(movie.Director.Id);
-
-            return mfd;
-        }
-
-        /// <summary>
-        /// Creates Movie and add to Database
-        /// </summary>
-        /// <param name="mf">Movie Full</param>
-        /// <param name="gen">String of genre's id sepreated by comma</param>
-        /// <param name="dir">Director id</param>
-        /// <returns>Create Movie</returns>
-        public MovieFull CreateMovie(MovieFull mf, string gen = "", string dir = "")
-        {
-            Movie movie = new Movie();
-            movie.Title = mf.Title;
-            movie.TicketPrice = mf.TicketPrice;
-            movie.Id = dc.Movies.Max(m => m.Id) + 1;
-
-            List<Int32> genres = new List<int>();
-            List<Int32> directors = new List<int>();
-
-            if (gen != "")
+            List<MovieBase> mbls = new List<MovieBase>();
+            foreach (var item in all_movies)
             {
-                var genSplit = gen.Split(',');
-
-                // fill the list of all genres
-                foreach (var g in genSplit)
-                {
-                    genres.Add(Convert.ToInt32(g));
-                }
-
-                // convert genres ids into genres and add to movies
-                foreach (var item in genres)
-                {
-                    movie.Genres.Add(dc.Genres.FirstOrDefault(g => g.Id == item));
-                }
+                MovieBase mf = new MovieBase();
+                mf.Id = item.Id;
+                mf.Title = item.Title;
+                mbls.Add(mf);
             }
 
-            // get director's id
-            int directorId = Convert.ToInt32(dir);
-            movie.Director = dc.Directors.FirstOrDefault(d => d.Id == directorId);
+            return mbls;
+        }
 
-            dc.Movies.Add(movie);
+        public MovieFull createMovie(MovieCreateForHttpPost newItem)
+        {
+            var d = dc.Directors.Find(newItem.DirectorId);
+            Models.Movie mov = new Models.Movie();
+
+            mov.Title = newItem.Title;
+            mov.TicketPrice = newItem.TicketPrice;
+
+            mov.Director = d;
+
+            foreach (var item in newItem.GenreId)
+            {
+                var g = dc.Genres.Find(item);
+                mov.Genres.Add(g);
+            }
+
+            dc.Movies.Add(mov);
             dc.SaveChanges();
 
-            return GetMovieFull(movie.Id);
+            return getMovieFull(mov.Id);
         }
 
-        /// <summary>
-        /// Gets list of Directors Names
-        /// </summary>
-        /// <returns>Directors Names List</returns>
-        public SelectList getSelectDirectorsList()
+        public MovieFull createMovie(MovieFull mf, string selDirector="", string selGenres = "")
         {
-            SelectList directorsList = new SelectList(dc.Directors, "Id", "Name");
-            return directorsList;
+            Models.Movie m = new Models.Movie();
+
+            m.Title = mf.Title;
+            m.TicketPrice = mf.TicketPrice;
+
+            if (selDirector != "")
+            {
+                int directorInt32 = Convert.ToInt32(selDirector);
+                m.Director = dc.Directors.FirstOrDefault(n => n.Id == directorInt32);
+            }
+
+            if (selGenres != "")
+            {
+                foreach (var item in selGenres.Split(','))
+                {
+                      var itemInt32 = Convert.ToInt32(item);
+                      var g = dc.Genres.FirstOrDefault(gg => gg.Id == itemInt32);
+                      m.Genres.Add(g);
+                }
+            }
+           
+            dc.Movies.Add(m);
+            dc.SaveChanges();
+
+            return getMovieFull(m.Id);
         }
 
-        /// <summary>
-        /// Get list of Genres
-        /// </summary>
-        /// <returns>Genres List</returns>
-        public SelectList getSelectGenresList()
+        public SelectList getMoviesSelectList()
         {
-            SelectList genresList = new SelectList(dc.Genres, "Id", "Name");
-            return genresList;
+            SelectList sl = new SelectList(getListOfMovieBase(), "Id", "Title");
+            return sl;
         }
+        public RepoMovie(){
+            rd = new RepoDirector();
+            rg = new RepoGenre();
+        }
+
+        // Implementation details
+        RepoDirector rd;
+        RepoGenre rg;
     }
 }
+
+/* Unused but working code. I've left this in, as an example of how to solve
+ * some situations I encountered before but that changed over time and I no longer
+ * need these functions.
+ */ 
+
+ /* public MovieFull createMovie(string title, string price, string d, string gids)
+        {
+            Models.Movie m = new Models.Movie();
+            
+            m.Title = title;
+            m.TicketPrice = Convert.ToDecimal(price);
+
+            foreach (var item in gids.Split(','))
+            {
+                var intItem = Convert.ToInt32(item);
+                var g =dc.Genres.FirstOrDefault(gg => gg.Id == intItem);
+                m.Genres.Add(g);
+            }
+
+            int did = Convert.ToInt32(d);
+            m.Director = dc.Directors.FirstOrDefault(n => n.Id == did);
+
+            dc.Movies.Add(m);
+            dc.SaveChanges();
+
+            return getMovieFull(m.Id);
+        }
+ 
+        public MovieBase getMovieBase(int? id)
+        {
+            if (id == null) return null;
+
+            var movie = dc.Movies.SingleOrDefault(n => n.Id == id);
+            if (movie == null) return null;
+
+            MovieBase mb = new MovieBase();
+            mb.Id = movie.Id;
+            mb.Title = movie.Title;
+
+            return mb;
+        }
+*/

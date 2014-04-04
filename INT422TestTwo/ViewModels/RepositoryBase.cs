@@ -1,28 +1,25 @@
-﻿using INT422TestTwo.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using INT422TestTwo.Models;
 
 namespace INT422TestTwo.ViewModels
 {
-    /// <summary>
-    /// Will be a base class for all repositories and will hold DataContext instance
-    /// </summary>
     public class RepositoryBase
     {
-        protected DataContext dc;
+        public RepositoryBase(){
 
-        /// <summary>
-        /// Constructor initializes DataContext 
-        /// plus adds additional configuration
-        /// </summary>
-        public RepositoryBase()
-        {
             dc = new DataContext();
 
-            dc.Configuration.LazyLoadingEnabled = false;
+            // turn off EF tracking changes and lazy loading
+            //   we do it ourselves
             dc.Configuration.ProxyCreationEnabled = false;
+            dc.Configuration.LazyLoadingEnabled = false;
+
         }
+
+        // implementation details
+        protected DataContext dc;
     }
 }

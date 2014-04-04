@@ -1,72 +1,65 @@
-﻿using INT422TestTwo.Models;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Web;
+using System.Web.Mvc;
 
 namespace INT422TestTwo.ViewModels
 {
-    /// <summary>
-    /// MovieForList ViewModel to be used in List
-    /// </summary>
-    public class MovieForList
-    {
-        /// <summary>
-        /// Movie Id = Primary Key
-        /// </summary>
+    public class MovieBase {
         [Key]
         public int Id { get; set; }
 
-        /// <summary>
-        /// Movie's title
-        /// </summary>
         [Required]
         public string Title { get; set; }
     }
 
-    /// <summary>
-    /// MovieFull ViewModel to be used in Details and Create 
-    /// </summary>
-    public class MovieFull : MovieForList
+    public class MovieFull: MovieBase
     {
-        /// <summary>
-        /// Constructor will initialize list of Genres
-        /// </summary>
+        [Required]
+        [Display(Name = "Ticket Price")]
+        public decimal TicketPrice { get; set; }
+        
+       public DirectorFull Director { get; set; }
+        
+       public List<GenreFull> Genres { get; set; }
+
         public MovieFull()
         {
-            Genres = new List<GenreFull>();
+            this.Director = new DirectorFull();
+            this.Genres = new List<GenreFull>();
         }
-
-        /// <summary>
-        /// Ticket's price
-        /// </summary>
-        [Required]
-        [Display(Name="Ticket Price")]
-        public decimal TicketPrice { get; set; }
-
-        /// <summary>
-        /// Movie's Director
-        /// </summary>
-        public DirectorFull Director { get; set; }
-
-        /// <summary>
-        /// List of Movie's Genres
-        /// </summary>
-        public List<GenreFull> Genres { get; set; }
     }
 
-    public class MovieForDetails : MovieForList
+    // Http GET method of Movie/Create sends this object to the browser
+    public class MovieCreateForHttpGet
     {
-        /// <summary>
-        /// Ticket's price
-        /// </summary>
-        [Required, Display(Name="Ticket Price")]
+        public string Title { get; set; }
+
+        [Display(Name = "Ticket Price")]
         public decimal TicketPrice { get; set; }
 
-        /// <summary>
-        /// Movie's Director
-        /// </summary>
-        public DirectorForList Director { get; set; }
+        public SelectList DirectorSelectList { get; set; }
+
+        public SelectList GenreSelectList { get; set; }
+
+        public void Clear()
+        {
+            Title = string.Empty;
+            TicketPrice = 0;
+        }
+    }
+
+    // Http POST method of Movie/Create recieves this object from the browser
+    public class MovieCreateForHttpPost
+    {
+        [Required]
+        public string Title { get; set; }
+        [Required]
+        public decimal TicketPrice { get; set; }
+
+        [Required(ErrorMessage="Select a Director")]
+        public int DirectorId { get; set; }
+
+        [Required(ErrorMessage="Select One or More Genres")]
+        public virtual ICollection<int> GenreId { get; set; }
     }
 }

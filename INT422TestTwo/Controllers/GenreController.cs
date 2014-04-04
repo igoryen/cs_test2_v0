@@ -1,5 +1,4 @@
-﻿using INT422TestTwo.ViewModels;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -9,19 +8,30 @@ namespace INT422TestTwo.Controllers
 {
     public class GenreController : Controller
     {
-        RepoGenre Repo_Genre = new RepoGenre();
+        private ViewModels.RepoGenre repoGenre = new ViewModels.RepoGenre();
+        private ViewModels.RepoMovie repoMovie = new ViewModels.RepoMovie();
+        private ViewModels.RepoDirector repoDirector = new ViewModels.RepoDirector();
+
         //
         // GET: /Genre/
         public ActionResult Index()
         {
-            return View(Repo_Genre.GetGenresForList());
+            return View(repoGenre.getListOfGenreBase());
         }
 
         //
         // GET: /Genre/Details/5
         public ActionResult Details(int id)
         {
-            return View(Repo_Genre.GetGenreFull(id));
+            if (id == null)
+            {
+                // calls our custom error message with custom error object
+                var errors = new ViewModels.VM_Error();
+                errors.ErrorMessages["ExceptionMessage"] = "No id specified";
+                return View("Error", errors);
+            }
+
+            return View(repoGenre.getGenreFull(id));
         }
 
         //
@@ -34,11 +44,11 @@ namespace INT422TestTwo.Controllers
         //
         // POST: /Genre/Create
         [HttpPost]
-        public ActionResult Create(FormCollection collection)
+        public ActionResult Create(FormCollection form)
         {
             try
             {
-                // TODO: Add insert logic here
+                 // TODO: Add insert logic here
 
                 return RedirectToAction("Index");
             }
@@ -46,13 +56,6 @@ namespace INT422TestTwo.Controllers
             {
                 return View();
             }
-        }
-
-        //
-        // GET: /Genre/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
         }
 
         //

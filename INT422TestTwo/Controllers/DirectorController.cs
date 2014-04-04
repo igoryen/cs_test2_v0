@@ -1,5 +1,4 @@
-﻿using INT422TestTwo.ViewModels;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -9,20 +8,28 @@ namespace INT422TestTwo.Controllers
 {
     public class DirectorController : Controller
     {
-        RepoDirector Repo_Director = new RepoDirector();
 
+        private ViewModels.RepoDirector repo = new ViewModels.RepoDirector();
         //
         // GET: /Director/
         public ActionResult Index()
         {
-            return View(Repo_Director.GetDirectorsForList());
+            return View(repo.getListOfDirectorBase());
         }
 
         //
         // GET: /Director/Details/5
-        public ActionResult Details(int id)
+        public ActionResult Details(int? id)
         {
-            return View(Repo_Director.GetDirectorFull(id));
+            if (id == null)
+            {
+                // calls our custom error message with custom error object
+                var errors = new ViewModels.VM_Error();
+                errors.ErrorMessages["ExceptionMessage"] = "No id specified";
+                return View("Error", errors);
+            }
+
+            return View(repo.getDirectorFull(id));
         }
 
         //
@@ -96,5 +103,5 @@ namespace INT422TestTwo.Controllers
                 return View();
             }
         }
-    }
+	  }
 }

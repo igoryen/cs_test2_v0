@@ -5,8 +5,6 @@ using System.Web;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
-using INT422TestTwo.Models;
-using System.Data.Entity;
 
 namespace INT422TestTwo
 {
@@ -19,7 +17,7 @@ namespace INT422TestTwo
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
 
-            Database.SetInitializer(new Initiallizer());
+            System.Data.Entity.Database.SetInitializer(new INT422TestTwo.Models.Initiallizer());
         }
     }
 }
